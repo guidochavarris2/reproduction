@@ -15,10 +15,45 @@
     </video>
 
     <h3>Subir un nuevo video</h3>
-    <form action="/upload" method="post" enctype="multipart/form-data">
-        <input type="file" name="video">
+    <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="video" id="videoInput">
         <button type="submit">Subir</button>
     </form>
+
+    <progress id="progressBar" value="0" max="100" style="width: 100%; display: none;"></progress>
+    <p id="statusText"></p>
+
+    <script>
+        document.getElementById('uploadForm').onsubmit = function(event) {
+            event.preventDefault();  // Evita que la página se recargue
+
+            let formData = new FormData(this);
+            let xhr = new XMLHttpRequest();
+            
+            xhr.open('POST', '/upload', true);
+
+            // Muestra la barra de progreso
+            document.getElementById('progressBar').style.display = 'block';
+
+            xhr.upload.onprogress = function(event) {
+                if (event.lengthComputable) {
+                    let percentComplete = (event.loaded / event.total) * 100;
+                    document.getElementById('progressBar').value = percentComplete;
+                    document.getElementById('statusText').innerText = Math.round(percentComplete) + "% subido";
+                }
+            };
+
+            xhr.onload = function() {
+                if (xhr.status == 200) {
+                    document.getElementById('statusText').innerText = "Subida completada";
+                } else {
+                    document.getElementById('statusText').innerText = "Error al subir el video";
+                }
+            };
+
+            xhr.send(formData);
+        };
+    </script>
 
 </body>
 </html>
